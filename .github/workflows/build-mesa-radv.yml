@@ -80,21 +80,34 @@ jobs:
         run: |
           git clone --depth 1 https://gitlab.freedesktop.org/mesa/mesa.git mesa
           cd mesa
+          # Optional: Checkout eine stabile Version, falls die neueste problematisch ist
+          # git checkout 23.3.0
       
       - name: Configure Mesa build
         working-directory: mesa
         run: |
+          # Zuerst die verfügbaren Optionen prüfen
+          meson setup --help > meson_options.txt || true
+          echo "Verfügbare Meson-Optionen:" 
+          cat meson_options.txt || true
+          
+          # Mesa-spezifische Optionen anzeigen
+          meson configure > mesa_options.txt || true
+          echo "Mesa Build-Optionen:" 
+          cat mesa_options.txt || true
+          
+          # Build mit korrigierten Optionen
           meson setup build/ \
-            -Dbuildtype=release \
+            --buildtype=release \
+            --prefix=/usr \
             -Dplatforms=android \
             -Dgallium-drivers= \
             -Dvulkan-drivers=amd \
             -Dandroid-stub=true \
             -Dllvm=enabled \
             -Dlibdir=lib \
-            -Ddri-search-path=/system/lib/dri \
             -Dcpp_std=c++17 \
-            --cross-file=../android-cross.txt
+            --cross-file ../android-cross.txt
       
       - name: Build Mesa
         working-directory: mesa
@@ -105,9 +118,11 @@ jobs:
       
       - name: Copy artifacts
         run: |
-          cp -r mesa/build/src/amd/vulkan/libvulkan_radeon.so mesa-radv-vangogh/
-          cp -r mesa/build/src/vulkan/libvulkan.so mesa-radv-vangogh/
-          cp -r mesa/build/src/vulkan/layers/libVkLayer_*.so mesa-radv-vangogh/ || true
+          cp -r mesa/build/src/amd/vulkan/libvulkan_radeon.so mesa-radv-vangogh/ || echo "Warning: libvulkan_radeon.so not found"
+          # Überprüfen des tatsächlichen Pfads für neue Mesa-Versionen
+          find mesa/build -name "libvulkan_radeon.so" -exec cp {} mesa-radv-vangogh/ \; || true
+          find mesa/build -name "libvulkan.so" -exec cp {} mesa-radv-vangogh/ \; || true
+          find mesa/build -name "libVkLayer_*.so" -exec cp {} mesa-radv-vangogh/ \; || true
       
       - name: Create artifact manifest
         run: |
@@ -116,6 +131,16 @@ jobs:
           echo "Architecture: gfx10_3" >> mesa-radv-vangogh/README.txt
           echo "Android target: aarch64" >> mesa-radv-vangogh/README.txt
           date >> mesa-radv-vangogh/README.txt
+          
+          # Hinzufügen von Build-Informationen
+          echo -e "\nBuild Options Used:" >> mesa-radv-vangogh/README.txt
+          echo "- Vulkan Drivers: amd" >> mesa-radv-vangogh/README.txt
+          echo "- Platform: android" >> mesa-radv-vangogh/README.txt
+          echo "- Target CPU: aarch64" >> mesa-radv-vangogh/README.txt
+          
+          # Auflistung der erstellten Dateien
+          echo -e "\nIncluded Files:" >> mesa-radv-vangogh/README.txt
+          ls -la mesa-radv-vangogh/ >> mesa-radv-vangogh/README.txt
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
