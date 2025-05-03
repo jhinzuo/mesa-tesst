@@ -42,7 +42,7 @@ jobs:
             wayland-protocols \
             libclang-dev \
             llvm-dev \
-            libclc-dev \
+            libclc-19-dev \
             libegl1-mesa-dev \
             flex \
             bison \
