@@ -14,7 +14,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Install dependencies
         run: |
@@ -126,7 +126,7 @@ jobs:
           date >> mesa-radv-vangogh/README.txt
       
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mesa-radv-vangogh
           path: mesa-radv-vangogh
