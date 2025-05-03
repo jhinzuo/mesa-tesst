@@ -84,7 +84,7 @@ jobs:
       - name: Configure Mesa build
         working-directory: mesa
         run: |
-          meson build/ \
+          meson setup build/ \
             -Dbuildtype=release \
             -Dplatforms=android \
             -Dgallium-drivers= \
@@ -92,17 +92,9 @@ jobs:
             -Dandroid-stub=true \
             -Dllvm=enabled \
             -Dlibdir=lib \
-            -Dradv-llvm=true \
-            -Dinstall-dev=true \
-            -Damd-arch=gfx10_3 \
-            -Dradv-deep-bound-check=true \
-            -Dvulkan-device-select-layer=true \
-            -Damdgpu-backend=true \
-            -Dvideo-codecs=h264dec,h264enc,h265dec,h265enc \
-            -Dvulkan-overlay-layer=true \
-            -Dradv-perftest=transfer,shaders,image_checker \
-            -Dbuild-aco-tests=true \
-            -Dcross-file=../android-cross.txt
+            -Ddri-search-path=/system/lib/dri \
+            -Dcpp_std=c++17 \
+            --cross-file=../android-cross.txt
       
       - name: Build Mesa
         working-directory: mesa
